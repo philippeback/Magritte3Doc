@@ -1,0 +1,73 @@
+* { margin: 0; padding: 0; }
+html, body { background-color: #FFF; font-family: Georgia,Times,serif; 
+	font-size: 20px; line-height: 30px; }
+.error input { border: 2px solid red; background-color: lightyellow; }
+.error select { border: 2px solid red; background-color: lightyellow; }
+.error textarea { border: 2px solid red; background-color: lightyellow; }
+.errors { background-color:#FCECEC; border:1px solid red; margin:0pt 0pt 25px;
+	 padding:10px; }
+.errors { list-style: none; }
+.messages { color:#00F; margin: 0px 0px 0px 25px; padding:10px; 
+	list-style: none;}
+.window { background-color: #FFF; }
+a:link, a:visited { border-bottom: medium none; color:#459045; }
+a:hover, a:active { text-decoration:none; }
+.blogLayout { width: 100%;}
+#header { background-color: #182733; color: #FFF; padding: 15px 0px 10px 27px; }
+#header a:hover {color: #999;}
+#pages { position: absolute; top: 20px; right: 20px; color: #CAE972; }
+#pages a { color: #CAE972; text-decoration: none; margin: 0 5px; }
+#header a { color: #FFF; text-decoration: none; }
+#header h1 { margin-left: 10px; }
+#byLine { font-style: italic; color: #CAE972; padding: 0 0 10px 12px; }
+.mainContent { padding: 40px; }
+h1, h2, h3, h4, h5, h6 { padding: 5px 0; font-weight: 600; }
+h2 a:link, h2 a:visited, h2 a:active, h2 a:hover { color: #1E2546; 
+	text-decoration: none; }
+p { margin: 5px 0 10px 0; }
+#search input {width: 200px;}
+#posts h1 { margin-bottom: 20px; }
+.post { margin-bottom: 20px; }
+.post h2 a:hover {text-decoration:none; color: #999;}
+#pages a:hover {color: #999;}
+
+.postMeta { color: #AAA; margin: 0px 0px 0px 17px !important; font-size: 17px;}
+.post p { margin: 0 0 25px 0; color: #222; }
+.navigation { width: 190px; padding: 40px 0 0 0; }
+.navigation ul { list-style: none; margin-top: 5px; }
+.navigation ul li { margin: 5px; }
+.FormFields label { display: block; }
+#theIsPublishedAjax label { display: inline; }
+#theIsPageAjax label { display: inline; }
+#theEnableCommentsAjax label { display: inline; }
+.comment { padding: 5px 0px 0px 5px; }
+.comment .title {  }
+.comment .comment { margin-left: 15px; }
+.comment .body { margin: 5px 0 0 0px; }
+.comment p {margin: 5px;}
+.comment .meta { font-size: x-small; }
+pre { font: normal 9pt Verdana !important; border: #092565 dashed 1px; 
+	background-color: #E7EBF2; padding: 0.5em;    margin-bottom: 1em; }
+.SBCommentFormContainer { width: 50%; }
+.SBCommentFormFields input[type=text] { width: 50%; }
+.SBCommentFormFields #theBodyAjax textarea { width: 80%; height:150px; }
+.SBPostFormContainer { width: 100%; }
+.SBPostFormFields .text { width: 1000px; }
+.SBPostFormFields textarea { width: 1000px; height:250px; }
+.relatedPosts {margin-left: 45px; }
+.relatedPosts ul {margin-left: 30px; }
+
+#commands {background-color:#EEEEEE;border-bottom:1px solid #AAAAAA;
+	color:#444444;font-size:10pt;font-size-adjust:none;font-stretch:normal;
+	font-style:normal;font-variant:normal;font-weight:normal;
+	line-height:normal;padding:2px 10px;position:fixed;z-index:20;}
+
+#commands a { color:#444444; padding-left:10px; padding-right:10px; 
+	text-decoration:none; }	
+#commands { top:0pt; right:0pt; border-left:1px solid #AAAAAA; }
+
+#categories {padding-top: 20px;}
+#categories h3 {display:none;}
+.postMeta a, #categories a {color: #999999;text-decoration: none;}
+.postMeta a:hover, #categories a:hover {color: #000;}
+

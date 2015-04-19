@@ -1,0 +1,48 @@
+.window {
+	border: 1px solid #aaa;
+}
+.window .window-titlebar {
+	color: #444;
+	padding: 5px;
+	overflow: hidden;
+	background-color: #eee;
+	border-bottom: 1px solid #aaa;
+	font: 10pt Verdana, Arial, Helvetica, sans-serif;
+}
+.window .window-titlebar .window-title {
+	float: left;
+	font-weight: bold;
+	padding-left: 20px;
+}
+.window .window-titlebar .browserhaloplugin {
+	background: url(codebrowser.png) no-repeat;
+}
+.window .window-titlebar .inspectorplugin {
+	background: url(inspector.png) no-repeat;
+}
+.window .window-titlebar .styleshaloplugin {
+	background: url(styleeditor.png) no-repeat;
+}
+.window .window-titlebar .configuretoolplugin {
+	background: url(config.png) no-repeat;
+}
+.window .window-titlebar .profilertoolplugin {
+	background: url(profiler.png) no-repeat;
+}
+.window .window-titlebar .memorytoolplugin {
+	background: url(memory.png) no-repeat;
+}
+.window .window-titlebar .window-close {
+	float: right;
+}
+.window .window-titlebar .window-close a {
+	color: #444;
+	text-decoration: none;
+}
+.window .window-titlebar .window-close a:hover {
+	color: #111;
+}
+.window .window-content {
+	clear: both;
+	padding: 2px;
+}

@@ -1,0 +1,1 @@
+	.SSForm .FormFields label {display: block; }	.SSForm .FieldRadioGroup input {vertical-align:middle; margin: 0 6px; padding: 0;}	.SSForm .checkbox {vertical-align: middle; margin: 0 6px 0 0; padding: 0; }	.SSForm .checkboxView label {display: inline; }	

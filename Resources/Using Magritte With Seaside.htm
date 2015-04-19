@@ -1,0 +1,299 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<!-- saved from url=(0050)http://onsmalltalk.com/using-magritte-with-seaside -->
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Using Magritte With Seaside</title><link rel="stylesheet" type="text/css" href="./Using Magritte With Seaside_files/window.css"><script type="text/javascript" src="./Using Magritte With Seaside_files/externalAnchors.js"></script><script type="text/javascript" src="./Using Magritte With Seaside_files/misc.js"></script><script type="text/javascript" src="./Using Magritte With Seaside_files/shortcuts.js"></script><meta http-equiv="Content-Script-Type" content="text/javascript"><link rel="alternate" type="application/atom+xml" title="On Smalltalk Atom Feed" href="http://onsmalltalk.com/seaside/atomFeed"><link rel="alternate" type="application/rss+xml" title="On Smalltalk RSS Feed" href="http://onsmalltalk.com/seaside/rssFeed"><link rel="stylesheet" type="text/css" href="./Using Magritte With Seaside_files/blogStyle.css"><script type="text/javascript" src="./Using Magritte With Seaside_files/prototype.js"></script><script type="text/javascript" src="./Using Magritte With Seaside_files/scriptaculous.js"></script><script type="text/javascript" src="./Using Magritte With Seaside_files/builder.js"></script><script type="text/javascript" src="./Using Magritte With Seaside_files/effects.js"></script><script type="text/javascript" src="./Using Magritte With Seaside_files/dragdrop.js"></script><script type="text/javascript" src="./Using Magritte With Seaside_files/controls.js"></script><script type="text/javascript" src="./Using Magritte With Seaside_files/slider.js"></script><script type="text/javascript" src="./Using Magritte With Seaside_files/sound.js"></script><script type="text/javascript" src="./Using Magritte With Seaside_files/mainScript.js"></script><meta name="description" content="One of the more tedious things one is faced with while writing web applications is input forms.  Forms suck because they&#39;re boring and repetitive.  Building them manually is the same thing over and ov..."><meta name="keywords" content="Magritte Programming Seaside Smalltalk"><link rel="stylesheet" type="text/css" href="./Using Magritte With Seaside_files/saved_resource"><script type="text/javascript" src="chrome-extension://bfbmjmiodbnnpllbbbfblcplfjjepjdn/js/injected.js"></script></head><body onload="onLoad()" onkeydown="onKeyDown(event)"><script type="text/javascript">/*<![CDATA[*/new PeriodicalExecuter(function(){new Ajax.Request('http://onsmalltalk.com/using-magritte-with-seaside',{'parameters':['_k=c2RyonbD','1'].join('&')})},81)/*]]>*/</script><div class="blog"><div id="header"><h1><a href="http://onsmalltalk.com/">On Smalltalk</a></h1><div id="byLine">thoughts on Smalltalk and programming in general...</div></div><div id="commands" style="right: 2000px;"><a accesskey="l" href="http://onsmalltalk.com/using-magritte-with-seaside?_k=c2RyonbD&2">Login</a></div><table border="0" cellspacing="0" cellpadding="0" class="blogLayout"><tbody><tr><td valign="top" class="mainContent"><div id="posts"><div class="post"><h2><a href="./Using Magritte With Seaside_files/Using Magritte With Seaside.htm">Using Magritte With Seaside</a></h2><p class="postMeta"> By Ramon Leon - 10 September 2007 under <a href="http://onsmalltalk.com/magritte">Magritte</a>, <a href="http://onsmalltalk.com/programming">Programming</a>, <a href="http://onsmalltalk.com/seaside">Seaside</a>, <a href="http://onsmalltalk.com/smalltalk">Smalltalk</a></p><div class="postBody"><p>One of the more tedious things one is faced with while writing web applications is input forms.  Forms suck because they're boring and repetitive.  Building them manually is the same thing over and over, but they're often just different enough that fully automating them is rather difficult.  I can't say I've ever seen a perfect solution, but I've come to consider Magritte a pretty good solution if your forms don't need to be too highly customized.  </p>
+
+<p>For an in depth look at the design of Magritte you should read <a href="http://www.iam.unibe.ch/~scg/Archive/Diploma/Reng06a.pdf">Lukas' Master's thesis</a>, however, it's a bit much if you're just trying to get something done and just want to understand how to get going with the basics.  Magritte's capable of more than you'll likely use if you're just wanting to build forms with Seaside.  I'm going to ignore those other abilities because frankly, I don't use them and don't plan to.</p>
+
+<p>The basic design of Magritte involves a few classes that you'll need to be familiar with and often subclass to extend and customize. </p>
+
+<h3>MADescription</h3>
+
+<p>With Magritte you describe your objects with subclasses of MADescription, this is where you'll always start, just describing the fields of your domain objects that you'll want generated forms for.  Descriptions contain the extra metadata necessary to create user interfaces, and which component will be used to render it.  A simple description looks like this...</p>
+
+<pre>descriptionIsClosed
+    ^ (MABooleanDescription new)
+          selectorAccessor: #isClosed;
+          label: 'Is Closed';
+          priority: 1000;
+          yourself
+</pre>
+
+<p>Generally speaking you'll keep these descriptions on the class side of your domain object.  On occasion, you'll want some property of the description to be dynamic and depend on the actual value of an instance side value, so you'll move the description to the instance side.  Strictly speaking, it doesn't matter where you put them, sometimes you'll use them to build forms when you don't even have a domain object, but this isn't the normal case.</p>
+
+<p>There are two basic ways to create a form dynamically, one is simple and includes all descriptions found on an object...</p>
+
+<pre>buildComponentFor: aModel
+    ^aModel asComponent addValidatedForm
+</pre>
+
+<p>The other, a little more complex, but much more useful because you'll find that rarely do you want "every" described field in a form.  Often you'll have multiple UI representations of a domain object within an app.  Descriptions are composable using a comma so you can build a form any subset of the fields...</p>
+
+<pre>buildComponentFor: aModel
+    ^((ModelClass descriptionFieldOne, ModelClass descriptionFieldTwo, ModelClass descriptionFieldThree)
+            asComponentOn: aModel)
+        addValidatedForm;
+        yourself
+</pre>
+
+<p>A Magritte form is generally wrapped with a form decoration via #addValidateForm, which by default gives you a #save and #cancel button.  Magritte forms don't directly work on your domain objects.  They work on a memento of the values pulled from your object using the descriptions.  When you call #save, the values are validated using the descriptions, and only after passing all validation rules are the values committed to your domain object by the momentos via the accessors, which I'll describe shortly.  For those interested, this is a good place to plug in a custom container component and integrate the #commit with Glorp, but that's another post.</p>
+
+<h3>Conditions</h3>
+
+<p>Descriptions can have predicates associated with them to validate the input data which it calls conditions.  There are two basic kinds of conditions (there are actually more, but the block forms are what I use), both are simply blocks that returns true or false to validate the data.  One is the single field condition which is passed the pending value directly and attached directly to your descriptions.  It's as simple as...</p>
+
+<pre>addCondition:[:value | value withBlanksTrimmed size &gt; 3]
+</pre>
+
+<p>The other is the multi field validation which works on the memento which I'll describe below.</p>
+
+<pre>    addCondition: [:memento | 
+        (memento cache at: CAUser descriptionPassword) isNil or: 
+            [(memento cache at: CAUser descriptionPassword) 
+                = (memento cache at: CAUser descriptionConfirmedPassword)]]
+    labelled: 'Passwords must match';
+</pre>
+
+<p>I've <a href="http://onsmalltalk.com/programming/smalltalk/multiple-field-validation-rules-in-magritte/">posted about these previously</a>.  They are attached to your containers description which has access to all the fields.  </p>
+
+<p>Conditions are one of the few things about Magritte that I'm still iffy on.  There are advantages to having your rules outside your domain objects, especially if you're taking advantage of Magritte as an Adaptive Object Model where users can build rules from the UI.  It also allows the mementos to easily test data for validity outside the domain object and gives you a nice place to hook into the validation system in the components.  It bothers me a little because it weakens the domain model, I'm still trying to find my balance here and decide just how much I'll allow as conditions.  </p>
+
+<p>Magritte is very pluggable, should I decide I want all my rules in my domain objects, I could plug in my own memento subclass to handle that, but I haven't felt the need just yet.</p>
+
+<h3>MAMemento</h3>
+
+<p>When components read and write to domain objects, they do it using mementos rather than working on the objects directly.  The default memento is MACheckedMemento, a subclass of MACachedMemento.  The mementos give Magritte a place to store invalid form data prior to allowing the data to be committed to the object.  It also allows Magritte to detect concurrency conflicts for shared in image objects.  By never committing invalid data to domain objects, there's never a need to roll anything back.  Should you feel the need, just override #mementoClass on your domain object to provide your own.</p>
+
+<h3>MAAccessor</h3> 
+
+<p>When a memento writes valid data to its model, it does so through accessors which are also defined by the descriptions.  MAAccessor subclasses allow you to define how a value gets written to your class.  For example, while I have a read selector for my collections like #users, I prefer to encapsulate #add and #remove on the domain object itself rather than having a writable selector for #users:.  When creating a description for that collection, I can specify my custom #accessor: rather than using the default #selectorAccessor: which then writes to my domain object with #addUser: and #removeUser:.</p>
+
+<p>Another valuable use for accessors can be found when you want to flatten several domain objects into a single form.  Say you have a User object with an Address object, and a CreditCard object but you want to edit them all as a single form.  You can create your form and dynamically wire up some MAChainAccessors like so...</p>
+
+<pre>userTemplate
+    ^((((CAUser descriptionEmail, CAUser descriptionPassword , CAUser descriptionConfirmedPassword)
+        addAll: (CAAddress description collect: [:each | 
+            each copy accessor: 
+                            (MAChainAccessor accessor: (MASelectorAccessor selector: #address) next: each accessor)]);
+        addAll: (CACreditCard description collect: [:each | 
+            each copy accessor: 
+                             (MAChainAccessor accessor: (MASelectorAccessor selector: #creditCard) next: each accessor)])) 
+                yourself)
+            asComponentOn: self session user)
+            addValidatedForm: {  (#save -&gt; 'Update Profile')};
+            yourself.
+</pre>
+
+<p>Which basically just composes the users descriptions with the addresses and credit cards descriptions while chaining the accessors together to allow the addresses fields to be written to the address object rather than directly to the customer object.  Any non trivial UI will contain many such forms and this is the ability I'm the most grateful for in Magritte.  Also notice in the example above how I changed the label for the save button to "Update Profile", also something you'll need to do often that isn't immediately obvious how to do.</p>
+
+<h3>MADescriptionComponent</h3>
+
+<p>Components control how your objects display.  Magritte widgets are subclasses of this component.  Some descriptions have an obvious one to one relationship with a UI component while others could easily be shown by several different components.  For example, an MAMemoDescription would be represented by a text area, but a MABooleanDescription could be a checkbox, or a drop down with true and false, or a radio group with true and false.  </p>
+
+<p>Each description defaults to a component, but allows you to override and specify any component you choose, including any custom one you may write.  For example, suppose I built a special component to render checkboxes as fancy graphics rather than ordinary html checkboxes.  I could plug it in by changing the description as follows.</p>
+
+<pre>descriptionIsClosed
+    ^ (MABooleanDescription new)
+          selectorAccessor: #isClosed;
+          label: 'Is Closed';
+          priority: 1000;
+          componentClass: CAFancyCheckbox;
+          yourself
+</pre>
+
+<p>These are essentially meta components written in standard Seaside.  They work on mementos and have access to your descriptions.  This is where all that meta data comes in handy.  If you're building a dropdown list, it'll get its option list from the description.  When you render an element's label, that's also read from the description.  </p>
+
+<p>When you build your own descriptions, you'll add fields to them for custom data that you'll want available in your custom components.  At first, you'll mostly use built in descriptions and components, but as you grow comfortable with Magritte you'll start wanting to build your own descriptions and components because you'll want to do things beyond the basic framework like Ajax.  Magritte provides a solid foundation for extension.</p>
+
+<h3>MAComponentRenderer</h3>
+
+<p>By default, Magritte forms are rendered using MATableRenderer which renders the fields in a table with errors at the top and labels to the left of input fields.  This is the default because it's the easiest thing to do automatically that looks halfway decent.  This can be overridden like so...</p>
+
+<pre>buildComponentFor: aModel
+    ^((ModelClass descriptionFieldOne, ModelClass descriptionFieldTwo, ModelClass descriptionFieldThree)
+            componentRenderer: MACssRenderer;
+            asComponentOn: aModel)
+        addValidatedForm;
+        yourself
+</pre>
+
+<p>This hook allows you to render the form as you please, should you want to display errors differently, or change how elements are wrapped, or how the outer container itself is wrapped.  It's handy to control how container classes are tagged with css classes to have the form dynamically change its appearance for various phases like valid/invalid.  If you don't want your forms to look like auto-generated forms, you will use this.</p>
+
+<p>For each of the classes I just described, you'll want to pull up a hierarchy browser and explore all the subclasses to see examples of how they are specialized.  Find some example projects in SqueakSource that use Magritte to see how others create custom descriptions and components.  As with any framework, successful use depends on understanding it, and understanding how the pieces fit together.  Magritte will not doing everything you want out of the box, it isn't meant to, but it's an excellent foundation to base your application on.  It will save you many hours of tedious work building forms by hand.  It will also give your objects extra metadata that you may find handy for purposes other than building forms.</p>
+
+<p>Along with Seaside, Magritte is also an excellent example of extremely well written object oriented code that is worth reading to see exactly what it takes to make a truly flexible and pluggable framework.  Because it was originally a masters thesis, it's also far better commented than you'd likely find in a similar "real" world framework.</p>
+</div><div class="postInfo"></div><div class="relatedPosts"><h3>Related Posts</h3><ul><li><a href="http://onsmalltalk.com/small-reddit-a-seaside-sample-application">Small Reddit, A Seaside Sample Application</a></li><li><a href="http://onsmalltalk.com/making-a-connection-pool-for-glorp-in-seaside">Making a Connection Pool for Glorp in Seaside</a></li><li><a href="http://onsmalltalk.com/interest-in-seaside-and-smalltalk-looking-good">Interest in Seaside and Smalltalk Looking Good</a></li><li><a href="http://onsmalltalk.com/a-simple-file-based-wiki-in-seaside">A Simple File Based Wiki in Seaside</a></li><li><a href="http://onsmalltalk.com/maintaining-loose-coupling-in-seaside-components">Maintaining Loose Coupling in Seaside Components</a></li></ul></div><a name="comments"></a><h3>Comments (automatically disabled after 1 year)</h3><div id="commentAjax"><div id="id3" class="comment"><div class="title"><strong></strong>&nbsp;2235 days ago</div><div class="body"><p>&gt; It bothers me a little because it weakens the domain model, </p>
+
+<p>I think the constraints should be defined, just once, alongside the domain model. Whether these are converted to conditions that are checked the way Magritte does should be a later bound decision, possibly dynamic.</p>
+</div><div id="id4" class="meta"></div></div><div id="id5" class="comment"><div class="title"><a target="_new" href="http://onsmalltalk.com/">Ramon Leon</a>&nbsp;2235 days ago</div><div class="body"><p>Care to expand on that thought further?  Where would you define them?  How would such a model look?</p>
+</div><div id="id6" class="meta"></div></div><div id="id7" class="comment"><div class="title"><strong></strong>&nbsp;2235 days ago</div><div class="body"><p>Can try :-)  Consistency constraints should be defined on the domain model itself, that is where they belong "definitionally". The constraints on Person would be defined on class Person (modulo instance-specific specialization), but represented in a form Magritte can traverse and reason with e.g.</p>
+
+<p>Person constraintOn: #dateOfBirth is: [....]</p>
+
+<p>Consider multiple channels that manipulate that domain model. On some channels the consistency checks may be enforced in the UI layer itself, on some other channels the checking should be done in a "server-side" call. This decision can be late bound (in an extreme case, perhaps even entirely dynamic on each call, if the call carries enough contextual info for validations). Just as Magritte creates components by walking descriptions, it could follow a logic that knew something about the properties of a channel (whether shallow or deep, determined dynamically on each call or relatively static) to customize which, how, and where constraints are checked.</p>
+
+<p>If some constraints vary depending on component used (e.g. free-form text field for a date vs. a date picker) the composition would be a bit more involved but same basic idea.</p>
+</div><div id="id8" class="meta"></div></div><div id="id9" class="comment"><div class="title"><a target="_new" href="http://onsmalltalk.com/">Ramon Leon</a>&nbsp;2234 days ago</div><div class="body"><p>To do so would require modifying Magritte to traverse the domain object for its conditions, a workable approach, but maybe too much work.  </p>
+
+<p>Since the descriptions are part of the domain class, I could just consider them the constraint system and give my domain objects the ability to validate themselves against their descriptions anytime.  I think that'd solve my objections and meet the requirements you laid out above.  I appreciate your thoughts on the matter.</p>
+</div><div id="id10" class="meta"></div></div><div id="id11" class="comment"><div class="title"><strong>cdrick</strong>&nbsp;2234 days ago</div><div class="body"><p>really cool, concise and clear !</p>
+
+<p>I thinks this examples could be put in some magritte class comments...</p>
+
+<p>Thanks Ramon, I was missing your posts ;)</p>
+
+<p>Maybe a post on how to link seaside/magritte and database would be cool :) Is it in relation to a special accesor, for instance MABlockAccessor ?</p>
+
+<p>Thanks</p>
+</div><div id="id12" class="meta"></div></div><div id="id13" class="comment"><div class="title"><strong></strong>&nbsp;2229 days ago</div><div class="body"><p>Should there be a more declarative way to use MAChainAccessor? Does much of it boil down to a tree of symbols?
+ (descriptionEmail
+  descriptionPassword
+  descriptionConfirmedPassword
+  address 
+     (street
+       city
+       zip)
+  creditCard
+     *
+ )</p>
+</div><div id="id14" class="meta"></div></div><div id="id15" class="comment"><div class="title"><a target="_new" href="http://onsmalltalk.com/">Ramon Leon</a>&nbsp;2229 days ago</div><div class="body"><p>Probably the cleanest thing to do would be to build a custom ChainDescription, I just haven't found it necessary yet.  A few more forms like this and I might.</p>
+</div><div id="id16" class="meta"></div></div><div id="id17" class="comment"><div class="title"><strong>Sebastian</strong>&nbsp;2223 days ago</div><div class="body"><p>Hey Ramon, your post covers details about using Magritte very useful to evaluate using it. In fact it encouraged me to make a little experiment from which I came out asking myself where is the <em>real gain</em>? by real gain I mean what are the concrete savings of using Magritte?
+As probably happens with every automagic form generator, they easily happen to become useful as a factory of forms. That maybe good maybe don't. 
+Todays if I want to make a site, I mean, a web application which makes a difference in the user experience, then I should think a lot about interface very carefully designed for every step of the workflow. Said that (1), knowing that Magritte is extensible enough to allow me to make my own canvas for any given control like the fancycheckbox (2) and having in mind the trend that web apps have interfaces highly customized for every step of their workflow (3), then I'm definitively not convinced of the applicability of Magritte.
+Why? because is not answered what a factory of forms can do for me if: 1 for everything I need I need to generate a description, 2 if the standard build does not satisfies (when it does really?) I have to emend the canvas 3 making simple things can easily become complex 4 I have to pay the indirect costs of the learning curve of programming describing instead of directly programming. Also you have to ponder that you can have a nice factored hierarchy of components of your own that does directly the <em>boring</em> thing in a simpler way. So I say that I save if I don't use that factory at all and use the description knowledge to build components myself and implement them myself well fatored. Of course a final conclusion should be taken from making the real numbers of forms and metrics as such for a formal applicability evaluation. For my, using this rule of thumb, don't gets interesting.
+One thing that could make a turn and justify using it is gaining OR mapping for the "same price". But ActiveRecords are not yet ready to go and any OR designed to map tables to classes I know are a real pain to scale in complexity. So I'm returning to the same skeptical position.
+Anyway my curiosity to see where Magritte lead others is far from being dead :) so I'm glad you write your comments.</p>
+</div><div id="id18" class="meta"></div></div><div id="id19" class="comment"><div class="title"><a target="_new" href="http://onsmalltalk.com/">Ramon Leon</a>&nbsp;2223 days ago</div><div class="body"><p>It's simple really, you get to describe your domain objects <em>once</em> and then generate any number of <em>validated</em> forms from that single description.  </p>
+
+<p>While you can customize every part of Magritte for each project, you generally don't.  What you end up doing is customizing once, so it works the way you like, and you reuse those customizations in every project you do.</p>
+
+<p>The descriptions themselves can be auto generated by your IDE when you create accessors, and quickly customized with properties like #beRequired, #default:, #options:, #addCondition:labelled:,#min:, #max, etc.  Believe it or not, it does result in having to write much less code and a project wide consistency in how forms look and feel that you won't get by manually building your forms.  It's also much faster than manually writing your forms.</p>
+
+<p>A better way to think of it is this, if you manually build your forms, and then factor your technique into something more reusable to save yourself time in the future, at some point, you'll end up with something similar to Magritte.  At that point, you'll understand you should've just used something like Magritte to begin with.  </p>
+
+<p>It's nothing more than a meta-model that allows you to add extra meta-data to your objects so that generic view components have everything they need to be bound to the model in a reusable fashion.</p>
+</div><div id="id20" class="meta"></div></div><div id="id21" class="comment"><div class="title"><strong>Bill</strong>&nbsp;2196 days ago</div><div class="body"><p>&gt; Magritte's capable of more than you'll likely use if you're 
+ &gt; just wanting to build forms with Seaside. I'm going to 
+ &gt; ignore those other abilities because frankly, I don't use 
+ &gt; them and don't plan to.</p>
+
+<p>Could you expand a bit on the other features Magritte offers, and why you don't plan to use them? e.g. are the default Viewers not as useful as the default Editors? Do you just need too many customizations to every viewer to benefit from Magritte, and not so for forms? Are the editors easy to Ajax-ify?</p>
+
+<p>Also, is there a set of components you would recommend to get started with, both for Seaside and Magritte?</p>
+
+<p>Lastly, where (in your image) would I find the code that creates your IDE customizations e.g. for description generation?</p>
+
+<p>Thanks!</p>
+</div><div id="id22" class="meta"></div></div><div id="id23" class="comment"><div class="title"><a target="_new" href="http://onsmalltalk.com/">Ramon Leon</a>&nbsp;2196 days ago</div><div class="body"><p>Building forms is something you can do with Magritte, but I think Lukas intended Magritte as a meta layer for further describing objects.  At one point I was using them to generate Glorp mappings, Pier uses them to search its object model and at one point you could generate both Seaside forms and Morphic forms from them.</p>
+
+<p>However, in truth, I've become less and less enamored with Magritte as I find myself having to jump through too many hoops and remember too many details about its object model to really customize it.</p>
+
+<p>Sebastian's comment above really got me to thinking about just how useful Magritte is.  Ajaxify'ing Magritte is no easy task especially when you want to have several fields tied together in various ways.</p>
+
+<p>I've come to realize the problem is Magritte is so meta that it forces you to solve the meta problem you're having rather than the actual problem you're having.  You can't easily rig up something to solve a problem with a particular form without having to solve it for all forms.  </p>
+
+<p>For example, making a select box be redrawn via Ajax when another one changes.  I did this, and I had to wire up descriptions to be dependents of other descriptions, and then extend the container to send messages between the individual views, it was a pain, I could have (and have) done this much faster by just dropping into raw Seaside.</p>
+
+<p>So, long story short, I've decided I prefer the approach taken by WAFormDialog, a single superclass that can be extended to create specific forms quickly.  I don't actually use WAFormDialog because I also like using metadata, so I'm hacking up my own form generator that uses pragmas from the model to control how it renders forms based on a few simple conventions that suite my style.  It allows me to easily override the automation on a per field basis to drop into Seaside and manually render anything that needs to be Ajaxified or fancier than the defaults provide.  So far I'm liking this approach much better than Magritte.</p>
+
+<p>So, I'd recommend taking a look at WAFormDialog and then hacking up something similar that suits you.  Seaside's reusable components are great, but I'm finding that mostly, I don't want to reuse components I didn't build myself because they are never quite what I want and it's so easy in Seaside to simply build your own component that is <em>exactly</em> what you want, no more, no less.</p>
+
+<p>I doubt I'll be using Magritte much anymore, but I learned a lot from it.  It's a great framework, but it's just not what I need.</p>
+
+<p>My browser customization can be found in the class SentorsaBrowser.  Sebastian, I appreciate the thoughtful comments, sometimes one spends so much time learning something that you forget just how complicated it seems, I'm glad I revisited my usage of Magritte and I much prefer my own method to using it.</p>
+</div><div id="id24" class="meta"></div></div><div id="id25" class="comment"><div class="title"><strong>Bill</strong>&nbsp;2179 days ago</div><div class="body"><p>&gt; so I'm hacking up my own form generator that uses pragmas from the model 
+&gt; to control how it render</p>
+
+<p>Any chance you can share this? Even if very specific to your style I'm sure it would be very useful to Seasiders in general.</p>
+
+<p>Thanks.</p>
+</div><div id="id26" class="meta"></div></div><div id="id27" class="comment"><div class="title"><a target="_new" href="http://onsmalltalk.com/">Ramon Leon</a>&nbsp;2179 days ago</div><div class="body"><p>As always, my code is available in my image.  The next time I update my image that should be available as SSForm in the SentorsaSeaside package.</p>
+</div><div id="id28" class="meta"></div></div><div id="id29" class="comment"><div class="title"><strong>Joe</strong>&nbsp;2158 days ago</div><div class="body"><p>Ramon,</p>
+
+<p>I have had my eye on Magritte for many months now and I have been reading your blog, mailing list posts, and Lukas's posts from the mailing list. As with a good deal of frameworks/idioms/etc. written by others, I spend a lot of time trying to listen to the "bad" chatter which is often more telling than the good (I have reviewed the source and agree that it is great OO code). </p>
+
+<p>Consequently, your last comment about how you've strayed from Magritte has really made me question whether I should use it at all. I suppose it depends on the particular project and what goals. I fear like you mentioned in another comment that I will just end up building more or less the same thing.</p>
+
+<p>As part of a much larger system, I want to create a system that does some of the following:</p>
+
+<p>1) Allows the user to dynamically add fields to a form. A good example of this in production is Microsoft SharePoint, albeit one that does it rather poorly IMO.</p>
+
+<p>2) Allows a user to add simple, but possibly chained dynamic validation rules. This is something SharePoint sucks at beyond "required" fields, which would be a simple #isRequired type idiom if I wanted to go that route.</p>
+
+<p>3) Ability to define new simple business objects based off existing primitives, for instance create a "Actress" based on a "Person" object, then add a "Movies" (collection of movies) to the object.</p>
+
+<p>4) AJAX, AJAX, AJAX. No, not for gimmicky purposes, but because parts of this application are very "desktop" like and constant reloading really is more of a pain in some places.</p>
+
+<p>5) Lots of self-contained widgets that broadcast events if they need to talk to/provide data to other widgets</p>
+
+<p>I plan not to really use the built-in Magritte forms templates and instead implement my own custom, theme-able forms. I think though what I am really interested in is not so much generating these forms well automagicallly, but the possibility of manipulating the meta-data at runtime. For instance, creating a description at runtime. I would prefer to avoid the meta-data route in some ways for reasons you mentioned because I really would prefer to just have the application somehow generate a concrete smalltalk class, but I am not so sure that is possible/good idea when you're dealing with hundreds of images scaled out. Ideas?</p>
+
+<p>I really like the way Lukas implemented security and other functionality in Pier using Magritte. This is what originally attracted me, not really the forms part, but it seems like it could be a daunting task really learning how to effectively use what he built despite documentation. Building my own system would take a lot of time, but in a sense it would do exactly what I want without mucking things up by being too generic.</p>
+
+<p>Do you think Magritte is still a good thing to use in a system like this? Thoughts? Thanks.</p>
+</div><div id="id30" class="meta"></div></div><div id="id31" class="comment"><div class="title"><a target="_new" href="http://onsmalltalk.com/">Ramon Leon</a>&nbsp;2158 days ago</div><div class="body"><p>What you're describing is much more oriented towards what Magritte was actually designed for, it already is a meta model and has the ability to allow user generated objects and forms.  The only place it's seriously lacking is Ajax, and field to field interactions.  </p>
+
+<p>My problem with it isn't conceptual, it's practical.  Every time I have to move beyond a demo and build a real complex form with field to field interactions and Ajax stuff, I have to start building custom seaside components and figure out how to tie them together somehow when fields interact.  Suddenly, it's much easier to just build a single Seaside component for the whole form, rather than a component per field.  </p>
+
+<p>Put simply, Magritte is too abstract, Seaside is the perfect level of abstraction (for me) to allow the control necessary.  Rather than composing forms from subcomponents, it's easier to have a single form component that uses metadata to render itself dynamically.  This approach works better for very customized programatically generated Ajaxy forms because I can drop into raw Seaside whenever necessary to customize it.  I don't want or need runtime generated forms, frankly, users can't handle that no matter how slick you try and make it.  There will always be those who build things, those who use them.  People don't want to build their own forms... unless they're developers.  Dabbledb has found out just how many of their users are actually semi-developers trying to use dabble to sell custom applications.</p>
+
+<p>If you want user built forms, Magritte is probably much more your cup of tea, that's what it was designed for.  Just be aware, if you want Ajax, you'll likely have to build all of your own Magritte components anyway, the default ones are very vanilla.  But, runtime building and modification of descriptions is what Magritte was meant for.</p>
+</div><div id="id32" class="meta"></div></div><div id="id33" class="comment"><div class="title"><strong>Joe</strong>&nbsp;2158 days ago</div><div class="body"><p>Ramon,</p>
+
+<p>You have a good point regarding the practicality of user generated forms. For my particular application, user generated forms are a part of a whole, mainly because that is what the client wants. In other words, most of the time I am not creating components that use user generated forms, rather the forms are more of an add-on for when the pre-canned stuff is not enough. It seems whether I use pre-canned or user generated forms, I need to add metadata to all my models because the canned objects may have to evolve to support a user generated form, for instance when type Customer is extended to VIPCustomer, necessitating 3 more fields.</p>
+
+<p>I suppose I like the fact that Magritte seems to allow me some flexibility designing the components. I can either just create a single component that uses the meta-data as needed for things like the memento cache, or create a series of components for the auto-generated forms. Obviously, the auto-generated forms are not going to be as powerful, but I think they are better than nothing at all. </p>
+
+<p>Case in point, image a CMS system. With each page, there is a potentially unknown amount of meta-data that needs to be added. In some cases, maybe it is just keyword and tags will suffice, but in others it may be adding business fields. I know that Pier does some of this and uses Magritte, but I don't really like the user experience in Pier despite the quality of the code, and it's not really that applicable for everything in my case anyway.  How would you add meta-data to something like this without a dynamic such as Magritte? Would this always be time to have a developer intervene?</p>
+
+<p>Certainly the surge in popularity of the numerous CMS and Portal products (SharePoint again for example) prove that there is at least some desire for user defined models. I think it's a bit different in the case of dabble db since it's pretty much ground 0 until you do some work, vs a system where you have a lot of pre-canned stuff and then realize the need to expand it. Where these systems suck is the nightmare of XML, assembly/jar hell, and horrible relational mapping (rows acting as columns ala SharePoint's database). The Magritte way is probably a lot better compromise than the existing implementations I have seen.</p>
+
+<p>I certainly agree and appreciate your practicality. Coming from the Assembly/C  , Java, and .NET world myself mainly, I see my share of ridiculous over engineering and complexity. If you've ever worked with Microsoft CRM, Peoplesoft, SharePoint, or Oracle  product, you are definitely aware of just how badly these guys glue stuff together when it needs to be dynamic. I suppose the only way I'm going to find out for myself with this is to move beyond my proof of concepts I have built with Squeak and into something more tangible.</p>
+</div><div id="id34" class="meta"></div></div><div id="id35" class="comment"><div class="title"><a target="_new" href="http://onsmalltalk.com/">Ramon Leon</a>&nbsp;2158 days ago</div><div class="body"><p>"I know that Pier does some of this and uses Magritte, but I don't really like the user experience in Pier despite the quality of the code"</p>
+
+<p>Same here, the code is great, but I don't like the design.  The problem with Pier is the same as the problem with many frameworks... someone else wrote them.  I've come to the conclusion that the only CMS framework I'll ever be happy with, is my own.  Seaside gives me too much power to have to put up with someone else's code.  </p>
+
+<p>So my advice is, build your own, there's nothing like knowing every line of code inside and out, and you'll never be stuck trying to figure out how to make it do something it wasn't intended for.</p>
+
+<p>I gave up on the idea of end user programming, I'm a developer, and it's just easier for me to hop in and add something that to build some uber meta system that just serves to replace me.  Smalltalk is my runtime configurable uber system, and I can make changes just as fast in it as some homebrew webified IDE that I'd cook up to give to users.</p>
+</div><div id="id36" class="meta"></div></div><div id="id37" class="comment"><div class="title"><strong>Joe</strong>&nbsp;2156 days ago</div><div class="body"><p>Agreed, I can do/think the same. The problem is when you have clients who get ideas in their head otherwise, i.e. hire me to do build something to eliminate future need for developers (me and others). It sounds ridiculous but it's true all the time now. There's also this huge push with bigger clients towards COTS which I absolutely hate.</p>
+
+<p>Smalltalk is definitely a breath of fresh air since there are few people imposing that I generate GUIDS and XML files simply to write "hello world" in some terrible bloated piece of garbage software. Working with everything from windows driver programming to Outlook programming w/ MAPI to ASP.NET w/ AJAX has really made me appreciate Smalltalk so much more then when I first touched it in the 80s. I swear there was a time in C  /MS world especially where though you maybe had to write a VESA driver and GUI for your app, it was easier doing that than dealing with some wannabe developer end user system/framework/builder like we get now.</p>
+</div><div id="id38" class="meta"></div></div><div id="id39" class="comment"><div class="title"><a target="_new" href="http://onsmalltalk.com/">Ramon Leon</a>&nbsp;2156 days ago</div><div class="body"><p>"The problem is when you have clients who get ideas in their head otherwise, i.e. hire me to do build something to eliminate future need for developers"</p>
+
+<p>I'd just say no.  You want something like that, go look at DabbleDB, Salesforce, WuFoo, etc, and when you figure out that isn't really what you want, come back, and we'll talk about what you want me to build and maintain for you.  </p>
+
+<p>End user programming is a myth, they don't really want to program, they just want to save money and think that's the answer.  Once they try out such a system and run into its limitations, they'll either accept them, or change their mind and decide they have to pay a programmer to get what they really want, which is usually something simple and highly custom.  </p>
+
+<p>Things like DabbleDB, Salesforce, and WuFoo are just way to complex for your average user, they want apps to use, not meta apps that can build apps they can use.  The people who want meta apps, are middle men who think they can build and brand apps to sell to end users.</p>
+</div><div id="id40" class="meta"></div></div><div id="id41" class="comment"><div class="title"><strong>Joe</strong>&nbsp;2150 days ago</div><div class="body"><p>Ramon,</p>
+
+<p>Agreed, but unless you are self employed, not always realistic. Microsoft certain is in love with this direction and it is certainly not helping the enterprise level consultant. See InfoPath, SharePoint "development platform", Oracle, etc.</p>
+</div><div id="id42" class="meta"></div></div><div id="id43" class="comment"><div class="title"><a target="_new" href="http://onsmalltalk.com/">Ramon Leon</a>&nbsp;2150 days ago</div><div class="body"><p>Yea, I understand, but I decided a while back to find a gig that didn't force me to do things I disagree with, it's just not worth the bitterness you eventually develop.  I take every opportunity to replace Microsoft stuff with better open source alternatives.</p>
+</div><div id="id44" class="meta"></div></div><div id="id45" class="comment"><div class="title"><strong>Sophie</strong>&nbsp;2148 days ago</div><div class="body"><p>&gt; it's easier to have a single form component that uses metadata
+&gt; to render itself dynamically. This approach works better for very
+&gt; customized programatically generated Ajaxy forms because I can
+&gt; drop into raw Seaside whenever necessary to customize it.</p>
+
+<p>I am really starting to need something like this. I'll either (muddle 
+through) building it, or beg or borrow it. Any chance you could share your 
+code for this e.g. as a fileOut?</p>
+
+<p>Thanks - Sophie (p.s. sent email, but never know with spam filters ...)</p>
+</div><div id="id46" class="meta"></div></div><div id="id47" class="comment"><div class="title"><a target="_new" href="http://onsmalltalk.com/">Ramon Leon</a>&nbsp;2148 days ago</div><div class="body"><p>Check out my latest image.</p>
+</div><div id="id48" class="meta"></div></div><div id="id49" class="comment"><div class="title"><a target="_new" href="http://leonsmith.com/">Leon Smith</a>&nbsp;2074 days ago</div><div class="body"><p>I think you meant WAFormDialog rather than MAFormDialog right ?</p>
+</div><div id="id50" class="meta"></div></div><div id="id51" class="comment"><div class="title"><a target="_new" href="http://onsmalltalk.com/">Ramon Leon</a>&nbsp;2074 days ago</div><div class="body"><p>Oh, good catch, typo on my part, corrected.</p>
+</div><div id="id52" class="meta"></div></div><div id="id53" class="comment"><div class="title"><a target="_new" href="http://blog.leugim.com.mx/">Miguel Cobá]</a>&nbsp;1994 days ago</div><div class="body"><p>Until this week I finally began to learn Magritte. I read all the tutorials, all the documentation I could find in the web and, in a post in the mailing list, a link to your post.
+First it seemed like Magritte was the perfect tool to speed up the development of a couple projects I have in mind. The examples from the tutorials were amazing. You can build/validate forms with little effort. All seemed perfect. But, when I began to do the real work of my project I find myself trying to change the way Magritte do things by default. The layout of fields, the css, the validations, etc.
+A feeling of being programing something that was not the app, but the meta/descriptions/custom renderers began to grow inside me. 
+Often I was trying to solve problems related to Magritte (customize it to adapt to my needs) instead of solving problems of my project.
+Of course you save time by no writing forms by hand. But many times, the time saved was lost trying to adapt Magritte.
+Furthermore, the code began to have classes (like CAFancyCheckbox or MACssRenderer in your example) that had nothing to do with my problem domain. Like another layer that you have to understand before getting to the problem domain.
+So, when I saw your comments I realize that I was not the only with this feeling. I agree with you that, as Seaside allows you to quickly create exactly what you need, in the long term the benefit of Magritte are not as evident and useful as initially appears.
+I have Magritte in a very high concept, both as a framework as and thesis work, but I think that Seaside is more than enough to write a big project without the need of another layer hiding your problem domain.</p>
+
+<p>Cheers,
+Miguel Cobá]</p>
+</div><div id="id54" class="meta"></div></div></div></div></div></td><td valign="top" class="navigation"><div id="extras"><form accept-charset="utf-8" method="post" action="./Using Magritte With Seaside_files/Using Magritte With Seaside.htm" id="searchForm"><div><input tabindex="-1" value="Default" name="55" style="position: absolute; top: -100em" type="submit" class="submit"></div><div id="search"><input onfocus="if(value==&#39;Search&#39;){value=&#39;&#39;;style.color=null}" style="color: #aaa" value="Search" name="56" type="text" class="text"></div><div><input name="_k" value="c2RyonbD" type="hidden" class="hidden"></div></form><div id="categories"><h3>Topics</h3><ul><li><a href="http://onsmalltalk.com/ajax">Ajax</a>&nbsp;(6)</li><li><a href="http://onsmalltalk.com/apache">Apache</a>&nbsp;(5)</li><li><a href="http://onsmalltalk.com/databases">Databases</a>&nbsp;(12)</li><li><a href="http://onsmalltalk.com/gemstone">Gemstone</a>&nbsp;(2)</li><li><a href="http://onsmalltalk.com/linux">Linux</a>&nbsp;(6)</li><li><a href="http://onsmalltalk.com/lisp">Lisp</a>&nbsp;(9)</li><li><a href="http://onsmalltalk.com/magritte">Magritte</a>&nbsp;(10)</li><li><a href="http://onsmalltalk.com/performance">Performance</a>&nbsp;(8)</li><li><a href="http://onsmalltalk.com/profiling">Profiling</a>&nbsp;(1)</li><li><a href="http://onsmalltalk.com/programming">Programming</a>&nbsp;(39)</li><li><a href="http://onsmalltalk.com/ruby">Ruby</a>&nbsp;(25)</li><li><a href="http://onsmalltalk.com/seaside">Seaside</a>&nbsp;(64)</li><li><a href="http://onsmalltalk.com/smalltalk">Smalltalk</a>&nbsp;(82)</li><li><a href="http://onsmalltalk.com/sql">Sql</a>&nbsp;(13)</li><li><a href="http://onsmalltalk.com/squeak">Squeak</a>&nbsp;(6)</li><li><a href="http://onsmalltalk.com/updates">Updates</a>&nbsp;(9)</li></ul></div></div></td></tr></tbody></table><div id="pages"><a href="http://onsmalltalk.com/about">about me</a>|<a href="http://onsmalltalk.com/books-worth-reading">good books</a>|<a href="http://onsmalltalk.com/top-posts">popular posts</a>|<a href="http://onsmalltalk.com/seaside/atomFeed">atom</a>|<a href="http://onsmalltalk.com/seaside/rssFeed">rss</a></div></div><script type="text/javascript">
+		document.write(unescape("%3Cscript src='http://www.google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+	</script><script src="./Using Magritte With Seaside_files/ga.js" type="text/javascript"></script>
+	<script type="text/javascript">	try {var pageTracker = _gat._getTracker("UA-118308-7"); pageTracker._trackPageview();} catch(err) {}</script><script type="text/javascript">/*<![CDATA[*/function onLoad(){}/*]]>*/</script><script id="hiddenlpsubmitdiv" style="display: none;"></script><script>try{for(var lastpass_iter=0; lastpass_iter < document.forms.length; lastpass_iter++){ var lastpass_f = document.forms[lastpass_iter]; if(typeof(lastpass_f.lpsubmitorig2)=="undefined"){ lastpass_f.lpsubmitorig2 = lastpass_f.submit; lastpass_f.submit = function(){ var form=this; var customEvent = document.createEvent("Event"); customEvent.initEvent("lpCustomEvent", true, true); var d = document.getElementById("hiddenlpsubmitdiv"); for(var i = 0; i < document.forms.length; i++){ if(document.forms[i]==form){ d.innerText=i; } } d.dispatchEvent(customEvent); form.lpsubmitorig2(); } } }}catch(e){}</script></body></html>
